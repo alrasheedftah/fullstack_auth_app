@@ -1,0 +1,34 @@
+services:
+  backend:
+    build:
+      context: ./backend-api
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/auth
+      - SECRET_KEY=ijope_not_firget_generate_secrete_key_hhhhh_but_it_willwork
+      - EXPIRE=3600
+      - PORT=3000
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: ./ui-app
+      dockerfile: Dockerfile
+    ports:
+      - '80:80'
+    environment:
+      - BACKEND_API_URL=http://localhost:3000 # TODO I have to resolve it late
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
