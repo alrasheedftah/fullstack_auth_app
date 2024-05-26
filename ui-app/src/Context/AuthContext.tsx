@@ -1,10 +1,10 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { AuthTokenResponse, UserModel, UserSignupModel } from "../Models/AuthResponse";
+import { UserModel, UserSignupModel } from "../Models/AuthResponse";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-const api_url = "http://localhost:3000";
+import { logout, signInAPI, signUpAPI } from "../Services/AuthServices";
+import { errorHandler } from "../Handlers/ErrorHandler";
 
 type AuthContextType = {
     user: UserModel | null;
@@ -13,19 +13,21 @@ type AuthContextType = {
     signIn: (userModel : UserModel) => void;
     logout: () => void;
     isLoggedIn: () => boolean;
+    setLoading: (val : boolean) => void;
+    isLoading: boolean;
   };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
-    const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
-    const [user, setUser] = useState<UserModel | null>(null);
     const navigate = useNavigate();
+    const [token, setToken] = useState<string | null>(null);
+    const [user, setUser] = useState<UserModel | null>(null);
+    const [isLoading, setLoading_] = useState(false);
 
     useEffect(() => {
-      const token = localStorage.getItem("token");
-      const user = localStorage.getItem("current_user");
-
+        const token = localStorage.getItem("token");
+        const user = localStorage.getItem("current_user");
         if (token && user) {
           axios.defaults.headers.common["Authorization"] = "Bearer " + token;
           setToken(token);
@@ -33,13 +35,33 @@ export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
         } else {
           delete axios.defaults.headers.common["Authorization"];
           localStorage.removeItem("token");
-
         }
+        setLoading(false);
     }, [token]);
 
-    const signUp = async ( userModel : UserSignupModel) => {
+      const signIn = async (userModel : UserModel) => {
         try {
-            const data = await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-up`, { ...userModel });
+              setLoading(true)
+              const data = await signInAPI(userModel);
+              if(data)
+              {
+                localStorage.setItem("token", data?.data.token);
+                setToken(data?.data.token)
+                localStorage.setItem("current_user", JSON.stringify(userModel));
+                setUser({ ...userModel, email: data?.data.email})
+                toast.success("Login Success!");
+                navigate("/");
+              }
+        } catch (error) {
+            setLoading(false)
+            errorHandler(error);
+          }
+      };
+
+      const signUp = async ( userModel : UserSignupModel) => {
+        try {
+            setLoading(true)
+            const data = await signUpAPI(userModel);
             if(data)
             {
               localStorage.setItem("token", data?.data.token);
@@ -51,56 +73,41 @@ export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
             }
 
           } catch (error) {
-            // Todo HandleError
-            toast.error(`There Isssu To Login ${error}`);
+            setLoading(false)
+            errorHandler(error);
           }
       };
-
-      const signIn = async (userModel : UserModel) => {
-        try {
-            const data = await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-in`, { ...userModel });
-
-            localStorage.setItem("token", data?.data.token);
-            setToken(data?.data.token)
-            localStorage.setItem("current_user", JSON.stringify(userModel));
-            setUser({ ...userModel, email: data?.data.email})
-            toast.success("Login Success!");
-            navigate("/");
-
-        } catch (error) {
-            // Todo HandleError
-            toast.error(`There Isssu To Login ${error}`);
-          }
-      };
-
 
     const isLoggedIn = () => !!token;
 
-    const logout = async () => {
-        await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-out`, {});
+    const signOut = async () => {
+        await logout();
         localStorage.removeItem("token");
         setToken("");
         setUser(null);
-        navigate("/");
+        navigate("/singin");
     };
 
-    // Memoized value of the authentication context
+    const setLoading = (val : boolean) => {  console.log("change" + val); setLoading_(val) };
+
     const contextValue = useMemo(
         () => ({
         user,
         setToken,
         signUp,
         signIn,
-        logout,
-        isLoggedIn
+        logout: signOut,
+        isLoggedIn,
+        isLoading,
+        setLoading: setLoading_ // Todo Makeit private and define accessable Method to invoke it
         }),
-        [token]
+        [token, isLoading]
     );
 
       return (
         <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-    );
-    };
+      );
+  };
 
     export const useAuth = () => {
     return useContext(AuthContext);

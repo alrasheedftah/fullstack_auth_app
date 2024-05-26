@@ -1,6 +1,6 @@
 import { Navbar as NavbarBootstrap, Container, Nav, Button, FormLabel } from "react-bootstrap"
 import { NavLink } from "react-router-dom"
-import { useAuth } from "../Provider/authProvider";
+import { useAuth } from "../Context/AuthContext";
 
 export function Navbar()
 {
@@ -23,7 +23,7 @@ export function Navbar()
                 </Nav>
             </Container>
             {isLoggedIn() && <> <Button onClick={() => logout()}> Logout </Button>
-            <FormLabel> Logged In </FormLabel> </>}
+            </>}
         </NavbarBootstrap>
     )
 }

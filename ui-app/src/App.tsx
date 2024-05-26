@@ -2,7 +2,7 @@ import {  Outlet } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import 'react-toastify/dist/ReactToastify.css';
 import { Navbar } from "./components/Navbar";
-import { AuthProvider } from "./Provider/authProvider";
+import { AuthProvider } from "./Context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 

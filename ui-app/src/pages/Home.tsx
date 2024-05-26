@@ -1,6 +1,10 @@
+import { Card } from "react-bootstrap";
+
 export function Home()
 {
     return (
-        <h1> Home </h1>
-    )
+            <Card>
+                <Card.Body>You have Sucessed Loggedin</Card.Body>
+            </Card>
+    );
 }

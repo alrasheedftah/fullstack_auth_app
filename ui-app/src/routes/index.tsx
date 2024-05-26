@@ -3,7 +3,7 @@ import App from "../App";
 import { Home } from "../pages/Home";
 import { SignIn } from "../pages/SignIn";
 import { SignUp } from "../pages/SignUp";
-import { ProtectedRoute } from "./ProtectedRoute";
+import { ProtectedRoute, PublicRoute } from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
     {
@@ -11,8 +11,8 @@ export const router = createBrowserRouter([
         element: <App />,
         children:
         [
-            { path: "singin", element: <SignIn /> },
-            { path: "singup", element: <SignUp /> },
+            { path: "singin", element: <PublicRoute><SignIn /> </PublicRoute> },
+            { path: "singup", element: <PublicRoute> <SignUp /> </PublicRoute>},
             {
             path: "",
             element: (

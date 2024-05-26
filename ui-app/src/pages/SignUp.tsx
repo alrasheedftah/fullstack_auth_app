@@ -1,12 +1,13 @@
 import { useForm } from "react-hook-form";
-import { useAuth } from "../Provider/authProvider";
+import { useAuth } from "../Context/AuthContext";
 import { Button, Form } from "react-bootstrap";
 import { UserSignupModel } from "../Models/AuthResponse";
+import { validatePassword } from "../Handlers/ValidationHandler";
 
 export function SignUp()
 {
 
-    const { signUp } = useAuth();
+    const { signUp, isLoading } = useAuth();
     const { register, handleSubmit, watch, formState: { errors } } = useForm<SignUpFormsInputs>({
         defaultValues: {
           username : "AnaRasta Jane",
@@ -15,27 +16,6 @@ export function SignUp()
           confirmPassword: 'DefaultPass123!',
         }},)
 
-    const validatePassword = (value : string) => {
-        const minLength = value.length >= 8;
-        const hasLetter = /[a-zA-Z]/.test(value);
-        const hasNumber = /[0-9]/.test(value);
-        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
-
-        if (!minLength) {
-          return 'Password must be at least 8 characters long';
-        }
-        if (!hasLetter) {
-          return 'Password must contain at least one letter';
-        }
-        if (!hasNumber) {
-          return 'Password must contain at least one number';
-        }
-        if (!hasSpecialChar) {
-          return 'Password must contain at least one special character';
-        }
-        return true;
-      };
-
       const password = watch('password');
 
       type SignUpFormsInputs = UserSignupModel & {
@@ -43,7 +23,7 @@ export function SignUp()
         };
 
     const handleSignUp = (form: SignUpFormsInputs) => {
-        signUp(form);
+      signUp(form);
       };
 
     return (
@@ -123,8 +103,8 @@ export function SignUp()
           )}
         </Form.Group>
 
-        <Button className="mt-3" variant="primary" type="submit">
-          Sign Up
+        <Button className="mt-3" variant="primary" type="submit" disabled={isLoading}>
+        {isLoading ? 'Loading…' : 'Sign Up'}
         </Button>
       </Form>
         </>
