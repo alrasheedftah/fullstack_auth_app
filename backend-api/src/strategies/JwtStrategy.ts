@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { UserService } from 'src/user/user.service';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { TokenPayload } from 'src/auth/auth.service';
+import { SECRET_KEY_KEY_NAME } from 'src/auth/utiles';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -29,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         // If token is not found in header or cookies, return null
         return null;
       },
-      secretOrKey: configService.get('SECRET_KEY'),
+      secretOrKey: configService.get(`${SECRET_KEY_KEY_NAME}`),
     });
   }
 

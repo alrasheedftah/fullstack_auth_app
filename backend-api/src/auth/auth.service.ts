@@ -5,6 +5,7 @@ import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { SignInUserDto } from 'src/user/dto/SignInUserDto';
+import { AUTHENTICATION_KEY_NAME, EXPIRE_KEY_NAME } from './utiles';
 
 export type TokenPayload = {
   email: string;
@@ -29,10 +30,12 @@ export class AuthService {
     };
 
     const expires = new Date();
-    expires.setSeconds(expires.getSeconds() + this.configService.get('EXPIRE'));
+    expires.setSeconds(
+      expires.getSeconds() + this.configService.get(`${EXPIRE_KEY_NAME}`),
+    );
 
     const token = this.jwtService.sign(tokenPayload);
-    response.cookie('Authentication', token, {
+    response.cookie(`${AUTHENTICATION_KEY_NAME}`, token, {
       httpOnly: true,
       expires,
     });
@@ -46,7 +49,7 @@ export class AuthService {
   }
 
   signout(response: Response) {
-    response.cookie('Authentication', '', {
+    response.cookie(`${AUTHENTICATION_KEY_NAME}`, '', {
       httpOnly: true,
       expires: new Date(),
     });
