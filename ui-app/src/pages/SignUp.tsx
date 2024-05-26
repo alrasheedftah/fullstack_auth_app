@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useAuth } from "../Provider/authProvider";
 import { Button, Form } from "react-bootstrap";
+import { UserSignupModel } from "../Models/AuthResponse";
 
 export function SignUp()
 {
@@ -8,7 +9,7 @@ export function SignUp()
     const { signUp } = useAuth();
     const { register, handleSubmit, watch, formState: { errors } } = useForm<SignUpFormsInputs>({
         defaultValues: {
-          userName : "AnaRasta Jane",
+          username : "AnaRasta Jane",
           email: 'default@example.com',
           password: 'DefaultPass123!',
           confirmPassword: 'DefaultPass123!',
@@ -37,15 +38,12 @@ export function SignUp()
 
       const password = watch('password');
 
-      type SignUpFormsInputs = {
-        email: string;
-        password: string;
-        userName: string;
+      type SignUpFormsInputs = UserSignupModel & {
         confirmPassword : string;
         };
 
     const handleSignUp = (form: SignUpFormsInputs) => {
-        signUp(form.email, form.userName, form.password);
+        signUp(form);
       };
 
     return (
@@ -77,14 +75,14 @@ export function SignUp()
           <Form.Control
             type="text"
             placeholder="Enter UserName"
-            {...register('userName', {
+            {...register('username', {
               required: 'userName is required',
             })}
-            isInvalid={!!errors.userName}
+            isInvalid={!!errors.username}
           />
-          {errors.userName && (
+          {errors.username && (
             <Form.Control.Feedback type="invalid">
-              {errors.userName.message}
+              {errors.username.message}
             </Form.Control.Feedback>
           )}
         </Form.Group>
@@ -125,8 +123,8 @@ export function SignUp()
           )}
         </Form.Group>
 
-        <Button variant="primary" type="submit">
-          Submit
+        <Button className="mt-3" variant="primary" type="submit">
+          Sign Up
         </Button>
       </Form>
         </>

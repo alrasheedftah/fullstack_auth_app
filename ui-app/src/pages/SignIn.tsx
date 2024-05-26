@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useAuth } from "../Provider/authProvider";
 import { Button, Form } from "react-bootstrap";
+import { UserModel } from "../Models/AuthResponse";
 
 export function SignIn()
 {
@@ -34,13 +35,10 @@ export function SignIn()
         return true;
       };
 
-      type LoginFormsInputs = {
-        email: string;
-        password: string;
-        };
+      type LoginFormsInputs = UserModel;
 
     const handleLogin = (form: LoginFormsInputs) => {
-        signIn(form.email, form.password);
+        signIn(form);
       };
 
     return (
@@ -85,7 +83,7 @@ export function SignIn()
         </Form.Group>
 
         <Button variant="primary" type="submit">
-          Submit
+          Sign In
         </Button>
       </Form>
         </>

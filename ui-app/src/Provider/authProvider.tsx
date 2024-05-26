@@ -1,22 +1,16 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { AuthTokenResponse } from "../Models/AuthResponse";
+import { AuthTokenResponse, UserModel, UserSignupModel } from "../Models/AuthResponse";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const api_url = "http://localhost:3000";
 
-// type LoginRequest = {
-//   email : string;
-//   password : string;
-// }
-
 type AuthContextType = {
-    // user: UserProfile | null;
-    // token: string | null;
+    user: UserModel | null;
     setToken: (newToken : string) => void;
-    signUp: (email: string, username: string, password: string) => void;
-    signIn: (username: string, password: string) => void;
+    signUp: (userSignupModel : UserSignupModel) => void;
+    signIn: (userModel : UserModel) => void;
     logout: () => void;
     isLoggedIn: () => boolean;
   };
@@ -24,56 +18,52 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
-    // State to hold the authentication token
     const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+    const [user, setUser] = useState<UserModel | null>(null);
     const navigate = useNavigate();
-    // Function to set the authentication token
 
     useEffect(() => {
-        if (token) {
-         axios.defaults.headers.common["Authorization"] = "Bearer " + token;
-        localStorage.setItem("token", token);
+      const token = localStorage.getItem("token");
+      const user = localStorage.getItem("current_user");
+
+        if (token && user) {
+          axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+          setToken(token);
+          setToken(user);
         } else {
-        delete axios.defaults.headers.common["Authorization"];
-        localStorage.removeItem("token");
+          delete axios.defaults.headers.common["Authorization"];
+          localStorage.removeItem("token");
+
         }
     }, [token]);
 
-    const signUp = async (
-        email: string,
-        username: string,
-        password: string
-      ) => {
+    const signUp = async ( userModel : UserSignupModel) => {
         try {
-            const data = await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-up`, {
-              email: email,
-              username: username,
-              password: password,
-            });
-
-            localStorage.setItem("token", data?.data.token);
-            setToken(data?.data.token)
-            navigate("/");
-            toast.success("Login Success!");
+            const data = await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-up`, { ...userModel });
+            if(data)
+            {
+              localStorage.setItem("token", data?.data.token);
+              localStorage.setItem("current_user", JSON.stringify(userModel));
+              setUser(userModel!);
+              setToken(data?.data.token)
+              navigate("/");
+              toast.success("Login Success!");
+            }
 
           } catch (error) {
             // Todo HandleError
-            console.log(error)
+            toast.error(`There Isssu To Login ${error}`);
           }
       };
 
-      const signIn = async (
-        email: string,
-        password: string
-      ) => {
+      const signIn = async (userModel : UserModel) => {
         try {
-            const data = await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-in`, {
-              email: email,
-              password: password,
-            });
+            const data = await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-in`, { ...userModel });
 
             localStorage.setItem("token", data?.data.token);
             setToken(data?.data.token)
+            localStorage.setItem("current_user", JSON.stringify(userModel));
+            setUser({ ...userModel, email: data?.data.email})
             toast.success("Login Success!");
             navigate("/");
 
@@ -90,12 +80,14 @@ export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
         await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-out`, {});
         localStorage.removeItem("token");
         setToken("");
+        setUser(null);
         navigate("/");
     };
 
     // Memoized value of the authentication context
     const contextValue = useMemo(
         () => ({
+        user,
         setToken,
         signUp,
         signIn,
