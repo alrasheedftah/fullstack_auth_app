@@ -4,25 +4,19 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Model, Types } from 'mongoose';
 import { User } from './entities/user.entity';
-import { Logger, NotFoundException } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { InjectModel } from '@nestjs/mongoose';
+import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
-  constructor(@InjectModel(User.name) private readonly model: Model<User>) {}
+  constructor(private readonly usersRepository: UsersRepository) {}
 
   async validateUser(email: string, password: string) {
-    const user = await this.model.findOne({ email }, {}, { lean: true });
-    if (!user) {
-      this.logger.warn('User not found with email', { email });
-      throw new NotFoundException('Document not found.');
-    }
-
+    const user = await this.usersRepository.findOne({ email });
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
       throw new UnauthorizedException('Credentials are not valid.');
@@ -33,30 +27,23 @@ export class UserService {
   private async validateCreateUserRequest(request: CreateUserDto) {
     let user: User;
     try {
-      user = await this.model.findOne(
-        { email: request.email },
-        {},
-        { lean: true },
-      );
-    } catch (err) {
-      console.log(err); // Todo logger
-    }
+      user = await this.usersRepository.findOne({
+        email: request.email,
+      });
+    } catch (err) {}
+
     if (user) {
-      throw new UnprocessableEntityException('Email already exists.');
+      throw new UnprocessableEntityException('Email exist. Try Another one');
     }
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     await this.validateCreateUserRequest(createUserDto);
 
-    const user = new this.model({
-      ...{
-        ...createUserDto,
-        password: await bcrypt.hash(createUserDto.password, 10),
-      },
-      _id: new Types.ObjectId(),
-    });
-    user.save();
+    const user = await this.usersRepository.create({
+      ...createUserDto,
+      password: await bcrypt.hash(createUserDto.password, 10),
+    } as User);
 
     return user;
   }
@@ -66,7 +53,6 @@ export class UserService {
   }
 
   async findOneByEmail(email: string) {
-    const user = await this.model.findOne({ email }, {}, { lean: true });
-    return user;
+    return this.usersRepository.findOne({ email });
   }
 }

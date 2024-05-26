@@ -7,8 +7,9 @@ import {
 } from 'class-validator';
 
 export class SignInUserDto {
+  @MinLength(3)
   @IsEmail()
-  email: string;
+  email?: string;
 
   @IsString()
   @IsNotEmpty()

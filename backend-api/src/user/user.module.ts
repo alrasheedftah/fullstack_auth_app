@@ -4,6 +4,7 @@ import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities/user.entity';
 import { DbconnectModule } from 'src/dbconnect/dbconnect.module';
+import { UsersRepository } from './users.repository';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { DbconnectModule } from 'src/dbconnect/dbconnect.module';
     DbconnectModule,
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, UsersRepository],
   exports: [UserService],
 })
 export class UserModule {}
