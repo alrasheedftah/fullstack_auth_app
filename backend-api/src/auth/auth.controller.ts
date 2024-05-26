@@ -2,6 +2,7 @@ import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import LocalAuthGuard from 'src/local-auth/local-auth.guard';
 import { Response } from 'express';
+import { SignInUserDto } from 'src/user/dto/SignInUserDto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Controller('auth')
@@ -10,7 +11,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   async signIn(
-    @Body() user: CreateUserDto,
+    @Body() user: SignInUserDto,
     @Res({ passthrough: true }) response: Response,
   ) {
     const token = await this.authService.login(user, response);

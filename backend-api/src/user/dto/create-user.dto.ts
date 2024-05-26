@@ -1,21 +1,9 @@
-import {
-  IsEmail,
-  IsString,
-  IsNotEmpty,
-  Matches,
-  MinLength,
-} from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { IsString, MinLength } from 'class-validator';
+import { SignInUserDto } from './SignInUserDto';
 
-export class CreateUserDto {
-  @IsEmail()
-  email: string;
-
+export class CreateUserDto extends PartialType(SignInUserDto) {
   @IsString()
-  @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @Matches(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/, {
-    message:
-      'Password must contain at least 1 letter, 1 number, and 1 special character',
-  })
-  password: string;
+  @MinLength(3)
+  username: string;
 }

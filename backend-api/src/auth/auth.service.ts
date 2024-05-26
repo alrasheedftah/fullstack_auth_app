@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { SignInUserDto } from 'src/user/dto/SignInUserDto';
 
 export type TokenPayload = {
   email: string;
@@ -22,7 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(user: CreateUserDto, response: Response): Promise<TokenResponse> {
+  async login(user: SignInUserDto, response: Response): Promise<TokenResponse> {
     const tokenPayload: TokenPayload = {
       email: user.email,
     };
@@ -41,7 +42,7 @@ export class AuthService {
 
   async register(registerReq: CreateUserDto, response: Response) {
     const user = await this.usersService.create(registerReq);
-    return this.login(registerReq, response);
+    return this.login(registerReq as SignInUserDto, response);
   }
 
   signout(response: Response) {
