@@ -9,6 +9,11 @@ export type TokenPayload = {
   email: string;
 };
 
+export type TokenResponse = {
+  email: string;
+  token: string;
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -17,7 +22,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(user: CreateUserDto, response: Response) {
+  async login(user: CreateUserDto, response: Response) : Promise<TokenResponse> {
     const tokenPayload: TokenPayload = {
       email: user.email,
     };
@@ -30,6 +35,8 @@ export class AuthService {
       httpOnly: true,
       expires,
     });
+
+    return { email: user.email, token: token };
   }
 
   async register(registerReq: CreateUserDto, response: Response) {
@@ -37,7 +44,7 @@ export class AuthService {
     this.login(registerReq, response);
   }
 
-  logout(response: Response) {
+  signout(response: Response) {
     response.cookie('Authentication', '', {
       httpOnly: true,
       expires: new Date(),

@@ -6,9 +6,8 @@ type Props = { children: React.ReactNode };
 
 export const ProtectedRoute = ({ children }: Props) => {
   const location = useLocation();
-  const { token } = useAuth();
-
-  return token ? (
+  const { isLoggedIn } = useAuth();
+  return isLoggedIn() ? (
     <>{children}</>
   ) : (
     <Navigate to="/singin" state={{ from: location }} replace />

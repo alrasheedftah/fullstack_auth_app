@@ -2,12 +2,18 @@ import axios from "axios";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { AuthTokenResponse } from "../Models/AuthResponse";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-const api = "http://localhost:3000/api";
+const api_url = "http://localhost:3000";
+
+// type LoginRequest = {
+//   email : string;
+//   password : string;
+// }
 
 type AuthContextType = {
     // user: UserProfile | null;
-    token: string | null;
+    // token: string | null;
     setToken: (newToken : string) => void;
     signUp: (email: string, username: string, password: string) => void;
     signIn: (username: string, password: string) => void;
@@ -19,12 +25,9 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
     // State to hold the authentication token
-    const [token, setToken_] = useState<string | null>(localStorage.getItem("token"));
+    const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
     const navigate = useNavigate();
     // Function to set the authentication token
-    const setToken = (newToken : string) => {
-        setToken_(newToken);
-    };
 
     useEffect(() => {
         if (token) {
@@ -42,14 +45,16 @@ export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
         password: string
       ) => {
         try {
-            const data = await axios.post<AuthTokenResponse>(`${api}/signup`, {
+            const data = await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-up`, {
               email: email,
               username: username,
               password: password,
             });
 
             localStorage.setItem("token", data?.data.token);
+            setToken(data?.data.token)
             navigate("/");
+            toast.success("Login Success!");
 
           } catch (error) {
             // Todo HandleError
@@ -62,24 +67,27 @@ export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
         password: string
       ) => {
         try {
-            const data = await axios.post<AuthTokenResponse>(`${api}/signup`, {
+            const data = await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-in`, {
               email: email,
               password: password,
             });
 
             localStorage.setItem("token", data?.data.token);
+            setToken(data?.data.token)
+            toast.success("Login Success!");
             navigate("/");
 
         } catch (error) {
             // Todo HandleError
-            console.log(error)
+            toast.error(`There Isssu To Login ${error}`);
           }
       };
 
 
     const isLoggedIn = () => !!token;
 
-    const logout = () => {
+    const logout = async () => {
+        await axios.post<AuthTokenResponse>(`${api_url}/auth/sign-out`, {});
         localStorage.removeItem("token");
         setToken("");
         navigate("/");
@@ -88,7 +96,6 @@ export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
     // Memoized value of the authentication context
     const contextValue = useMemo(
         () => ({
-        token,
         setToken,
         signUp,
         signIn,

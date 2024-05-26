@@ -45,7 +45,7 @@ export function SignUp()
         };
 
     const handleSignUp = (form: SignUpFormsInputs) => {
-        signUp(form.userName, form.email, form.password);
+        signUp(form.email, form.userName, form.password);
       };
 
     return (
