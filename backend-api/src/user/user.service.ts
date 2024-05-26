@@ -1,7 +1,10 @@
-import { Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { Model, Connection, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from './entities/user.entity';
 import { Logger, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -65,17 +68,5 @@ export class UserService {
   async findOneByEmail(email: string) {
     const user = await this.model.findOne({ email }, {}, { lean: true });
     return user;
-  }
-
-  findOneById(id: string) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }
